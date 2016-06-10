@@ -11,7 +11,6 @@ type TestWebSocket struct {
 }
 
 var callCount int
-var closeCalled bool
 
 func (ws TestWebSocket) ReadJSON(v interface{}) error {
 	defer func() { callCount++ }()
@@ -20,6 +19,16 @@ func (ws TestWebSocket) ReadJSON(v interface{}) error {
 	}
 	return json.Unmarshal([]byte(ws.responses[callCount]), v)
 }
+
+var messageSent string
+
+func (ws TestWebSocket) WriteJSON(v interface{}) error {
+	bytesSent, err := json.Marshal(v)
+	messageSent = string(bytesSent)
+	return err
+}
+
+var closeCalled bool
 
 func (ws TestWebSocket) Close() error {
 	closeCalled = true
@@ -30,5 +39,6 @@ func callWithTestWebsocket(funcToTest func(WebSocket), responses []string) {
 	websocket := TestWebSocket{responses: responses}
 	callCount = 0
 	closeCalled = false
+	messageSent = ""
 	funcToTest(websocket)
 }

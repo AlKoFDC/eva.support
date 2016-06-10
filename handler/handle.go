@@ -8,6 +8,7 @@ import (
 
 type WebSocket interface {
 	ReadJSON(interface{}) error
+	WriteJSON(interface{}) error
 	Close() error
 }
 
@@ -17,6 +18,7 @@ type SlackMessageHandler struct {
 	Name         string
 	ID           string
 	WS           WebSocket
+	counter      uint64
 }
 
 // SlackMessage implements MessageHandler.
@@ -48,6 +50,13 @@ func (h *SlackMessageHandler) Handle() {
 			}
 		}
 	}
+}
+
+// Send sends a message to the underlying websocket.
+func (h *SlackMessageHandler) Send(msg message.M) error {
+	h.counter++
+	msg.Id = h.counter
+	return h.WS.WriteJSON(msg)
 }
 
 // Close closes the underlying websocket.
