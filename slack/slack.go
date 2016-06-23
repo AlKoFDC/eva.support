@@ -58,16 +58,17 @@ func slackStart(token string) (wsurl, id string, err error) {
 }
 
 // Starts a websocket-based Real Time API session and return a slack message handler.
-func Connect(token string) handler.SlackMessageHandler {
+func Connect(token string) (handler.SlackMessageHandler, error) {
+	emptyResponse := handler.SlackMessageHandler{}
 	wsurl, id, err := slackStart(token)
 	if err != nil {
-		log.Fatal(err)
+		return emptyResponse, err
 	}
 
 	wsConnection, _, err := websocket.DefaultDialer.Dial(wsurl, nil)
 	if err != nil {
-		log.Fatal(err)
+		return emptyResponse, err
 	}
 
-	return handler.SlackMessageHandler{WS: wsConnection, ID: id}
+	return handler.SlackMessageHandler{WS: wsConnection, ID: id}, nil
 }

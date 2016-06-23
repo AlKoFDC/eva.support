@@ -62,7 +62,11 @@ func main() {
 	}
 
 	// Connect to slack.
-	wsHandler := slack.Connect(t)
+	wsHandler, err := slack.Connect(t)
+	if err != nil {
+		logger.Error.Println("Error while connecting:", err)
+		os.Exit(1)
+	}
 	defer wsHandler.Close()
 	logger.Standard.Println(fmt.Sprintf("Connected as %s.", wsHandler.ID))
 
