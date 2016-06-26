@@ -93,6 +93,7 @@ func (h *AsynchSlackMessageHandler) handle() {
 func (h *AsynchSlackMessageHandler) close() {
 	if h.WS != nil {
 		h.WS.Close()
+		h.WS = nil
 	}
 }
 

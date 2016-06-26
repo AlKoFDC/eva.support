@@ -7,6 +7,7 @@ import (
 	"github.com/AlKoFDC/eva.support/slack"
 	"os"
 	"os/signal"
+	"runtime"
 	"syscall"
 )
 
@@ -26,6 +27,9 @@ var tokenFile = flag.String("f", "", "`file` with slack bot token")
 // Print unknown messages.
 var printUnknownMessages = flag.Bool("u", false, "print unknown messages")
 
+// Handle messages asynchronously.
+var asynch = flag.Bool("a", false, "handle messages asynchronously")
+
 // Help
 var help = flag.Bool("h", false, "show help")
 
@@ -34,7 +38,7 @@ var printUsage = func(err error) {
 	if err != nil {
 		fmt.Fprintln(os.Stderr, fmt.Sprintf("Error: %s", err))
 	}
-	fmt.Fprintln(os.Stderr, fmt.Sprintf("Usage: %s ([-t ]<token>|-f <file>) [-n <name>] [-u] [-h]", os.Args[0]))
+	fmt.Fprintln(os.Stderr, fmt.Sprintf("Usage: %s ([-t ]<token>|-f <file>) [-a] [-n <name>] [-u] [-h]", os.Args[0]))
 	flag.PrintDefaults()
 }
 
@@ -61,22 +65,45 @@ func main() {
 		os.Exit(1)
 	}
 
-	// Connect to slack.
-	wsHandler, err := slack.Connect(t)
-	if err != nil {
-		logger.Error.Println("Error while connecting:", err)
-		os.Exit(1)
+	if *asynch {
+		// Connect to slack asynchronously.
+		wsHandler, err := slack.ConnectAsynch(t)
+		if err != nil {
+			logger.Error.Println("Error while connecting:", err)
+			os.Exit(1)
+		}
+		logger.Standard.Println(fmt.Sprintf("Connected asynchronously as %s.", wsHandler.ID))
+
+		// FIXME Set the name.
+		// FIXME Set the print flag.
+
+		finish := make(chan struct{})
+		defer func() {
+			finish <- struct{}{}
+			for wsHandler.WS != nil {
+				// Wait for websocket connection to be closed.
+				runtime.Gosched()
+			}
+		}()
+		go wsHandler.Start(finish)
+	} else {
+		// Connect to slack.
+		wsHandler, err := slack.Connect(t)
+		if err != nil {
+			logger.Error.Println("Error while connecting:", err)
+			os.Exit(1)
+		}
+		defer wsHandler.Close()
+		logger.Standard.Println(fmt.Sprintf("Connected as %s.", wsHandler.ID))
+
+		// Set the name.
+		wsHandler.Name = *name
+
+		// Set the print flag.
+		wsHandler.PrintUnknown = *printUnknownMessages
+
+		go wsHandler.Handle()
 	}
-	defer wsHandler.Close()
-	logger.Standard.Println(fmt.Sprintf("Connected as %s.", wsHandler.ID))
-
-	// Set the name.
-	wsHandler.Name = *name
-
-	// Set the print flag.
-	wsHandler.PrintUnknown = *printUnknownMessages
-
-	go wsHandler.Handle()
 
 	// Handle SIGINT and SIGTERM for graceful shutdowns.
 	systemInterruptChannel := make(chan os.Signal)
