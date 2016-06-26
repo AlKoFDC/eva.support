@@ -37,7 +37,8 @@ func TestShouldCallWebsocketCloseAsynch(t *testing.T) {
 	)
 }
 
-func TestShouldReceiveAndSendMessagesthroughWebsocket(t *testing.T) {
+func TestShouldReceiveAndSendMessagesThroughWebsocket(t *testing.T) {
+	t.Skip("Send a message to the bot.")
 	callWithTestWebsocket(
 		func(ws WebSocket) {
 			handler := AsynchSlackMessageHandler{

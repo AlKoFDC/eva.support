@@ -41,7 +41,13 @@ func (h *SlackMessageHandler) Handle() {
 		case message.TypeError:
 			logger.Error.Println("Error during connection:", msg.Error.Code, "-", msg.Error.Message)
 		case message.TypeMessage:
-			h.handleTypeMessage(msg)
+			mh := handler{
+				name: h.Name, id: h.ID, printUnknown: h.PrintUnknown,
+			}
+			answer, send := mh.handleTypeMessage(msg)
+			if send {
+				h.Send(answer)
+			}
 		case message.TypeReconnectURL, message.TypePresenceChange, message.TypeTyping:
 		// Do nothing. FIXME yet?
 		default:

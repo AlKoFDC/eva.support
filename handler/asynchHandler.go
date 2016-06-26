@@ -11,6 +11,9 @@ type AsynchSlackMessageHandler struct {
 	ID string
 	WS WebSocket
 
+	Name         string
+	PrintUnknown bool
+
 	receive chan message.M
 	send    chan message.M
 
@@ -76,15 +79,33 @@ func (h *AsynchSlackMessageHandler) sendMessage() {
 func (h *AsynchSlackMessageHandler) handle() {
 	// Close send on returning to return the send function.
 	defer close(h.send)
+	mh := handler{
+		name: h.Name, id: h.ID, printUnknown: h.PrintUnknown,
+	}
 	for {
-		mes, ok := <-h.receive
+		msg, ok := <-h.receive
 		if !ok {
 			// Return on closed receive channel.
 			return
 		}
-		switch mes.Type {
+		switch msg.Type {
 		case message.TypeHelloWorld:
-			go helloWorldHandler(mes, h.send)
+			h.send <- handleHelloWorld(msg)
+		case message.TypeHello:
+			logger.Standard.Println("Connection successful.")
+		case message.TypeError:
+			logger.Error.Println("Error during connection:", msg.Error.Code, "-", msg.Error.Message)
+		case message.TypeMessage:
+			answer, send := mh.handleTypeMessage(msg)
+			if send {
+				h.send <- answer
+			}
+		case message.TypeReconnectURL, message.TypePresenceChange, message.TypeTyping:
+		// Do nothing. FIXME yet?
+		default:
+			if h.PrintUnknown {
+				logger.Error.Println(fmt.Sprintf("Unknown message: %#v", msg))
+			}
 		}
 	}
 }
@@ -95,9 +116,4 @@ func (h *AsynchSlackMessageHandler) close() {
 		h.WS.Close()
 		h.WS = nil
 	}
-}
-
-func helloWorldHandler(mes message.M, responseChannel chan message.M) {
-	mes.Text = "Hello, world!"
-	responseChannel <- mes
 }

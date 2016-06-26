@@ -1,6 +1,8 @@
 package message
 
-import "strings"
+import (
+	"strings"
+)
 
 // These are the messages read off and written into the websocket. Since this
 // struct serves as both read and write, we include the "Id" field which is
@@ -23,4 +25,11 @@ type SlackError struct {
 
 func (m M) IsHelloMessage() bool {
 	return strings.Contains(strings.ToLower(m.Text), "hello")
+}
+
+// isForMe returns true if the message was sent @ the ID set in the SlackMessageHandler
+// or for any variation of the set bot name.
+func (msg M) IsForMe(name, id string) bool {
+	return (name != "" && strings.Contains(strings.ToLower(msg.Text), "@"+name)) ||
+		(id != "" && strings.Contains(msg.Text, "@"+id))
 }

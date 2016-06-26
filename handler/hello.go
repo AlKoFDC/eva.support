@@ -5,8 +5,8 @@ import (
 )
 
 // hello reacts to a message, that greets the bot.
-func (h *SlackMessageHandler) hello(msg message.M) {
+func (h *handler) hello(msg message.M) message.M {
 	// Respond on the same channel.
 	msg.Text = "Hello, <@" + msg.User + ">. How can I help you? :blush:"
-	h.Send(msg)
+	return msg
 }

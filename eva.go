@@ -74,8 +74,11 @@ func main() {
 		}
 		logger.Standard.Println(fmt.Sprintf("Connected asynchronously as %s.", wsHandler.ID))
 
-		// FIXME Set the name.
-		// FIXME Set the print flag.
+		// Set the name.
+		wsHandler.Name = *name
+
+		// Set the print flag.
+		wsHandler.PrintUnknown = *printUnknownMessages
 
 		finish := make(chan struct{})
 		defer func() {
