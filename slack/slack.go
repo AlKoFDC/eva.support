@@ -6,7 +6,6 @@ import (
 	"github.com/AlKoFDC/eva.support/handler"
 	"github.com/gorilla/websocket"
 	"io/ioutil"
-	"log"
 	"net/http"
 )
 
@@ -57,18 +56,40 @@ func slackStart(token string) (wsurl, id string, err error) {
 	return
 }
 
-// Starts a websocket-based Real Time API session and return a slack message handler.
+// Connect starts a websocket-based Real Time API session and returns a Slack Message Handler.
 func Connect(token string) (handler.SlackMessageHandler, error) {
 	emptyResponse := handler.SlackMessageHandler{}
-	wsurl, id, err := slackStart(token)
+	wsConnection, id, err := getWSandID(token)
 	if err != nil {
 		return emptyResponse, err
+	}
+	return handler.SlackMessageHandler{WS: wsConnection, ID: id}, nil
+}
+
+// ConnectAsynch starts a websocker-based Real Time API session and returns
+// an asynchronous Slack Message Handler.
+func ConnectAsynch(token string) (handler.AsynchSlackMessageHandler, error) {
+	emptyResponse := handler.AsynchSlackMessageHandler{}
+	wsConnection, id, err := getWSandID(token)
+	if err != nil {
+		return emptyResponse, err
+	}
+	return handler.AsynchSlackMessageHandler{WS: wsConnection, ID: id}, nil
+}
+
+// getWSandID connects to slack with the token and returns the websocket connection and an ID,
+// that identifies the user.
+func getWSandID(token string) (*websocket.Conn, string, error) {
+	var empty *websocket.Conn = nil
+	response := ""
+	wsurl, id, err := slackStart(token)
+	if err != nil {
+		return empty, response, err
 	}
 
 	wsConnection, _, err := websocket.DefaultDialer.Dial(wsurl, nil)
 	if err != nil {
-		return emptyResponse, err
+		return empty, response, err
 	}
-
-	return handler.SlackMessageHandler{WS: wsConnection, ID: id}, nil
+	return wsConnection, id, nil
 }

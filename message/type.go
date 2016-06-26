@@ -2,6 +2,9 @@ package message
 
 // These are the message types.
 const (
+	// This is a type for testing purposes. It is not sent by slack.
+	TypeHelloWorld = "hello_world"
+
 	TypeHello        = "hello"
 	TypeError        = "error"
 	TypeReconnectURL = "reconnect_url"

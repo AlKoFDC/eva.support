@@ -35,7 +35,7 @@ func (ws TestWebSocket) Close() error {
 	return nil
 }
 
-func callWithTestWebsocket(funcToTest func(WebSocket), responses []string) {
+func callWithTestWebsocket(funcToTest func(WebSocket), responses ...string) {
 	websocket := TestWebSocket{responses: responses}
 	callCount = 0
 	closeCalled = false

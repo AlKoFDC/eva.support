@@ -7,8 +7,9 @@ import (
 )
 
 const (
-	testID       = "test"
-	helloMessage = `{"type": "hello"}`
+	testID                = "test"
+	helloTestMessage      = `{"type": "hello"}`
+	helloWorldTestMessage = `{"type": "hello_world"}`
 )
 
 func TestShouldCallWebsocketClose(t *testing.T) {
@@ -23,7 +24,7 @@ func TestShouldCallWebsocketClose(t *testing.T) {
 				t.Errorf("Expected close to be called, but it was not.")
 			}
 		},
-		[]string{helloMessage},
+		helloTestMessage,
 	)
 }
 
@@ -53,6 +54,5 @@ func TestShouldWriteToWebsocket(t *testing.T) {
 				t.Errorf("Expected sent message to be %s, but it is: %s", message2, messageSent)
 			}
 		},
-		nil,
 	)
 }
