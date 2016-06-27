@@ -16,8 +16,11 @@ type handler struct {
 // The second return parameter is true, if tha answer needs to be sent.
 func (h *handler) handleTypeMessage(msg message.M) (message.M, bool) {
 	msgForMe := msg.IsForMe(h.name, h.id)
+	if !msgForMe {
+		return msg, false
+	}
 	switch {
-	case msgForMe && msg.IsHelloMessage():
+	case msg.IsHelloMessage():
 		return h.hello(msg), true
 	case msg.Subtype == message.SubtypeChanged:
 		// Do nothing. FIXME yet?
