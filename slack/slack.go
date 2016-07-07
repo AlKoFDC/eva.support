@@ -77,6 +77,17 @@ func ConnectAsynch(token string) (handler.AsynchSlackMessageHandler, error) {
 	return handler.AsynchSlackMessageHandler{WS: wsConnection, ID: id}, nil
 }
 
+// ConnectRegister starts a websocket-based Real Time API session and returns
+// a Slack Message Handler, that uses the register package.
+func ConnectRegister(token string) (handler.RegisterSlackHandler, error) {
+	emptyResponse := handler.RegisterSlackHandler{}
+	wsConnection, id, err := getWSandID(token)
+	if err != nil {
+		return emptyResponse, err
+	}
+	return handler.RegisterSlackHandler{WS: wsConnection, ID: id}, nil
+}
+
 // getWSandID connects to slack with the token and returns the websocket connection and an ID,
 // that identifies the user.
 func getWSandID(token string) (*websocket.Conn, string, error) {
