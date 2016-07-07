@@ -76,3 +76,8 @@ func TestShouldUseDefaultWhenNoConditionFits(t *testing.T) {
 			h.callCount, d.callCount)
 	}
 }
+
+func TestShouldNotFailWhenRemoveOnEmptyBot(t *testing.T) {
+	b := Bot{}
+	b.Remove(alwaysTrue{})
+}
