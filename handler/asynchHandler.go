@@ -75,7 +75,7 @@ func (h *AsynchSlackMessageHandler) sendMessage() {
 	}
 }
 
-// This function provides asynchronous message handling.
+// handle provides asynchronous message handling.
 func (h *AsynchSlackMessageHandler) handle() {
 	// Close send on returning to return the send function.
 	defer close(h.send)
