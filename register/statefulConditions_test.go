@@ -11,7 +11,7 @@ type statefulCondition struct {
 
 var _ Conditioner = (*statefulCondition)(nil)
 
-func (c *statefulCondition) IsTrue(message.M) bool {
+func (c *statefulCondition) IsTrue(Caller, message.M) bool {
 	c.count++
 	return c.count == 3
 }
@@ -21,7 +21,7 @@ func TestStatefulCondition(t *testing.T) {
 	c := statefulCondition{}
 	h := callCounter{}
 	b.Case(&c, &h)
-	msgChan := b.Start()
+	msgChan := b.Start(&mockCallerReceiver{})
 	defer close(msgChan)
 	for count := 0; count < 5; count++ {
 		msgChan <- message.M{}

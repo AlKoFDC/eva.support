@@ -44,6 +44,16 @@ func TestShouldNotBeAbleToAddCaseWithEitherNil(t *testing.T) {
 	}
 }
 
+type mockCallerReceiver struct{}
+
+func (cr *mockCallerReceiver) Ident() (string, string) {
+	return "mock", "you"
+}
+
+func (cr *mockCallerReceiver) Send(message.M) error {
+	return nil
+}
+
 func TestShouldUseFirstConditionThatIsTrue(t *testing.T) {
 	b := Bot{}
 	c1, c2, c3, c4 := alwaysFalse{}, alwaysFalse2{}, alwaysTrue{}, alwaysFalse{}
@@ -52,7 +62,7 @@ func TestShouldUseFirstConditionThatIsTrue(t *testing.T) {
 	b.Case(c2, &h2)
 	b.Case(c3, &h3)
 	b.Case(c4, &h4)
-	msgChan := b.Start()
+	msgChan := b.Start(&mockCallerReceiver{})
 	msgChan <- message.M{}
 	close(msgChan)
 	if h1.callCount != 0 || h2.callCount != 0 || h3.callCount != 1 || h4.callCount != 0 {
@@ -68,7 +78,7 @@ func TestShouldUseDefaultWhenNoConditionFits(t *testing.T) {
 	d := callCounter{}
 	b.Default(&d)
 	b.Case(c, &h)
-	msgChan := b.Start()
+	msgChan := b.Start(&mockCallerReceiver{})
 	msgChan <- message.M{}
 	close(msgChan)
 	if h.callCount != 0 || d.callCount != 1 {

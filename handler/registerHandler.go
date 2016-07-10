@@ -24,10 +24,16 @@ func (sh *RegisterSlackHandler) Start(finish chan struct{}) {
 	if sh.bot == nil {
 		sh.bot = &register.Bot{}
 	}
-	msgChan := sh.bot.Start()
+	msgChan := sh.bot.Start(sh)
 	go sh.sendMessagesToChannel(msgChan)
 	defer sh.close()
 	<-finish
+}
+
+func (sh *RegisterSlackHandler) Send(msg message.M) error {
+	sh.counter++
+	msg.Id = sh.counter
+	return sh.WS.WriteJSON(msg)
 }
 
 // sendMessagesToChannel sends the messages, that the websocket receives to
@@ -39,7 +45,7 @@ func (sh *RegisterSlackHandler) sendMessagesToChannel(msgChan chan message.M) {
 		msg := message.M{}
 		err := sh.WS.ReadJSON(&msg)
 		if err != nil {
-			logger.Error.Println(err)
+			logger.Error.Println(err, msg)
 			return
 		}
 		msgChan <- msg
@@ -75,4 +81,12 @@ func (sh *RegisterSlackHandler) DefaultCase(h register.Handler) {
 		sh.bot = &register.Bot{}
 	}
 	sh.bot.Default(h)
+}
+
+var _ register.Caller = (*RegisterSlackHandler)(nil)
+
+// Ident returns the identifications of the handler to satisfy the register
+// interface Caller.
+func (sh *RegisterSlackHandler) Ident() (string, string) {
+	return sh.ID, sh.Name
 }

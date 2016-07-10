@@ -6,7 +6,7 @@ type noop struct{}
 
 var _ Handler = (*noop)(nil)
 
-func (h noop) Handle(m message.M) {
+func (h noop) Handle(Receiver, message.M) {
 	return
 }
 
@@ -17,7 +17,7 @@ type callCounter struct {
 
 var _ Handler = (*callCounter)(nil)
 
-func (h *callCounter) Handle(m message.M) {
+func (h *callCounter) Handle(Receiver, message.M) {
 	h.callCount++
 	return
 }

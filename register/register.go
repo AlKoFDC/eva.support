@@ -50,29 +50,36 @@ func (b *Bot) Default(h Handler) {
 	b.defaultHandler = h
 }
 
+// CallerReceiver is the interface that needs to be available from the outside
+// for being able to get information about the calling bot and send messages.
+type CallerReceiver interface {
+	Caller
+	Receiver
+}
+
 // Start starts the handling of the messages and returns the channel, on which
 // it expects to receive messages.
 // If the channel is closed, the handling stops.
-func (b *Bot) Start() chan message.M {
+func (b *Bot) Start(cr CallerReceiver) chan message.M {
 	mChan := make(chan message.M)
-	go b.handleMessages(mChan)
+	go b.handleMessages(cr, mChan)
 	return mChan
 }
 
 // handleMessages handles the messages by checking if the condition is true
-func (b *Bot) handleMessages(messages chan message.M) {
+func (b *Bot) handleMessages(cr CallerReceiver, messages chan message.M) {
 mainLoop:
 	for msg := range messages {
 		// Check for conditions.
 		for _, condition := range b.conditionOrder {
-			if condition.IsTrue(msg) {
-				b.conditionHandlers[condition].Handle(msg)
+			if condition.IsTrue(cr, msg) {
+				b.conditionHandlers[condition].Handle(cr, msg)
 				continue mainLoop
 			}
 		}
 		// If no condition matches, use the default handler.
 		if b.defaultHandler != nil {
-			b.defaultHandler.Handle(msg)
+			b.defaultHandler.Handle(cr, msg)
 		}
 	}
 }

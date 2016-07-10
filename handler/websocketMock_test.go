@@ -10,6 +10,8 @@ type TestWebSocket struct {
 	responses []string
 }
 
+var _ WebSocket = (*TestWebSocket)(nil)
+
 var callCount int
 
 func (ws TestWebSocket) ReadJSON(v interface{}) error {

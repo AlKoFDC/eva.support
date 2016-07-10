@@ -30,6 +30,6 @@ func (m M) IsHelloMessage() bool {
 // isForMe returns true if the message was sent @ the ID set in the SlackMessageHandler
 // or for any variation of the set bot name.
 func (msg M) IsForMe(name, id string) bool {
-	return (name != "" && strings.Contains(strings.ToLower(msg.Text), "@"+name)) ||
-		(id != "" && strings.Contains(msg.Text, "@"+id))
+	return (name != "" && strings.Contains(strings.ToLower(msg.Text), strings.ToLower("@"+name))) ||
+		(id != "" && strings.Contains(strings.ToLower(msg.Text), strings.ToLower("@"+id)))
 }
